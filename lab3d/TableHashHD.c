@@ -479,10 +479,10 @@ TableHash *searchKeyVersionTH(TableHHD *table, TableHash *search, char *key, int
             keyTable = calloc(itemHD.lenghtInfo, sizeof(char));
             fseek(table->file, itemHD.infoOffset, SEEK_SET);
             fread(keyTable, sizeof(char), itemHD.lenghtInfo, table->file);
-                
             newItem = calloc(1, sizeof(Item));
             newItem->version = itemHD.version;
             newItem->info = strdup(keyTable);
+            free(keyTable);
             newItem->next = NULL;
             ksNew->item = newItem;
             break;

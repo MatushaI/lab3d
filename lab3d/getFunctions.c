@@ -263,4 +263,3 @@ FILE *importBinaryFile(const char* invite, char choose[4]) {
     
     return file;
 }
-

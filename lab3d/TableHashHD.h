@@ -50,8 +50,6 @@ typedef struct TableHash {
     TitleHash *th;
 } TableHash;
 
-
-
 TableHHD *importTableHHD(FILE *file);
 int exportTableHHD(TableHHD *table);
 int addInfoHHD(TableHHD *table, char *info, char *key);
@@ -68,4 +66,4 @@ TableHash *searchKeyTH(TableHHD *table, TableHash *search, char *key);
 TableHash *searchKeyVersionTH(TableHHD *table, TableHash *search, char *key, int version);
 void clearTableHash(TableHash *table);
 
-#endif 
+#endif
