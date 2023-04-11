@@ -5,55 +5,44 @@
 #include <unistd.h>
 #include "TableHashHD.h"
 
-/*
-int importFile(TableHD *table, Table *search) {
-    int check = 0;
+
+int importFile(TableHHD *table, TableHash *search) {
+    int check = 1;
     FILE *file = NULL;
     file = getFile("\nВведите название файла\n", "r", &check);
-    char *string = NULL;
-    int i = 1;
-    int n = 0;
+    char *key = NULL;
+    char *info = NULL;
+    int i = 0;
     
     if(file) {
         printf("(OK) Файл найден. Начат импорт\n");
-        string = readString(file);
-        while (string) {
-            if(i % 3 == 1) {
-                n = getIntUnsignt(string);
-                if(n == -1) {
-                    break;;
-                }
-                free(string);
+        while (check) {
+            key = readString(file);
+            if(key == NULL) {
+                break;
             }
-            if(i % 3 == 2) {
-                if(!addInfoHD(table, n, string)) {
-                    free(string);
-                }
-            }
-            if(i % 3 == 0) {
-                if(strlen(string) == 0) {
-                    free(string);
-                } else {
-                    free(string);
-                    break;
-                }
-            }
-            
             i++;
-            string = readString(file);
+            info = readString(file);
+            if(info == NULL) {
+                break;
+            }
+            i++;
+            addInfoHHD(table, info, key);
         }
-        fclose(file);
-        
+        if(i%2 == 1) {
+            free(key);
+        }
     } else {
         printf("(X) Файл не найден\n");
     }
     if(check == -1) {
         return 0;
     }
+    fclose(file);
     
     return 1;
 }
-*/
+
 char *readString(FILE *file) {
     char *ptr = (char *)malloc(1);
     char buf[81];
@@ -98,7 +87,6 @@ FILE* getFile(const char* invite, char choose[4], int *check) {
     } else {
         *check = -1;
     }
-    printf("%s\n", dir);
     free(dir);
     return file;
 }
@@ -177,7 +165,7 @@ char *myreadline(const char* invite) {
     }
 }
 
-/*
+
 
 FILE *importBinaryFile(const char* invite, char choose[4]) {
     FILE *file = NULL;
@@ -231,7 +219,7 @@ FILE *importBinaryFile(const char* invite, char choose[4]) {
     
     do {
         printf("%s\n", errorMessage);
-        string = myreadline("Введите количество элементов таблицы\n> ");
+        string = myreadline("Введите количество элементов хэш-массива \n> ");
         
         if(string == NULL) {
             free(s);
@@ -253,29 +241,26 @@ FILE *importBinaryFile(const char* invite, char choose[4]) {
         dir[lendir] = '/';
         dir[lendir+1] = '\0';
         dir = strcat(dir, s);
-        file = fopen(dir, "a+b");
+        file = fopen(dir, "w+r");
         free(s);
     }
     free(dir);
     
-    unsigned long long load = sizeof(unsigned long long) + 2 * sizeof(int) + n * sizeof(KeySpaceHD);
-    printf("%llu\n", load);
+    unsigned long long load = sizeof(unsigned long long) + 2 * sizeof(int) + n * sizeof(TitleHashHD);
+    fseek(file, 0, SEEK_SET);
     fwrite(&load, sizeof(unsigned long long), 1, file);
     load = n;
     fwrite(&load, sizeof(int), 1, file);
-    load = 0;
-    fwrite(&load, sizeof(int), 1, file);
     
-    KeySpaceHD *ks = calloc(n, sizeof(KeySpaceHD));
+    TitleHashHD *th = calloc(n, sizeof(TitleHashHD)); 
     
     for(int i = 0; i < n; i++) {
-        ks[i].key = 0;
-        ks[i].latestVersionOffset = 0;
+        th[i].KeySpaceOffset = 0;
     }
      
-    fwrite(ks, sizeof(KeySpaceHD), n, file);
-    free(ks);
+    fwrite(th, sizeof(TitleHashHD), n, file);
+    free(th);
     
     return file;
 }
-*/
+

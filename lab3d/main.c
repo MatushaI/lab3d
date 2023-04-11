@@ -2,41 +2,53 @@
 #include <stdlib.h>
 #include "getFunctions.h"
 #include "TableHashHD.h"
+#include "dialog.h"
 
 int main(void) {
     
-    /*
-    unsigned int size = 10;
-    unsigned long long allOffset = sizeof(unsigned long long) + sizeof(TitleHashHD)*size + sizeof(unsigned int);
+    FILE *file = importBinaryFile("Введите название файла, содержащего таблицу\n", "r+");
     
-    FILE *file = getFile("Введите название файла > ", "w+r", NULL);
-    fwrite(&allOffset, sizeof(unsigned long long), 1, file);
-    fwrite(&size, sizeof(unsigned int), 1, file);
-    
-    TitleHashHD *titleHash = NULL;
-    titleHash = calloc(size, sizeof(TitleHashHD));
-    for (int i = 0; i < size; i++) {
-        titleHash[i].KeySpaceOffset = 0;
+    if(!file) {
+        return 0;
     }
     
-    fwrite(titleHash, sizeof(TitleHashHD), size, file);
-    fclose(file);
-    */
-    
-    FILE *file1 = getFile("Введите название файла > ", "r+", NULL);
-    TableHHD *table = importTableHHD(file1);
+    TableHHD *table = importTableHHD(file);
     TableHash *search = createTH(10);
-    char *key = myreadline("Ключ > ");
-    char *info = myreadline("Инфо > ");
-    addInfoHHD(table, info, key);
-    printTableHHD(table);
-    char *src = myreadline("search > ");
-    search = searchKeyVersionTH(table, search, src, 2);
-    //deleteOldVersionsHHD(table, del);
-    printTH(search);
     
-    fseek(file1, 0, SEEK_SET);
-    fwrite(&table->allOffset, sizeof(unsigned long long), 1, file1);
+    const char *msgs[] = {"0. Выход", "1. Добавить элемент", "2. Поиск", "3. Удаление", "4. Печать таблицы", "5. Импорт"};
+    const int Nmsgs = sizeof(msgs) / sizeof(msgs[0]);
+    
+    int (*func[])(TableHHD *, TableHash *) = {NULL, addInfo_In, search_In, delete_In, printTable_In, importFile};
+    
+    int rc;
+    while((rc = dialog(msgs, Nmsgs, NULL))){
+        if(!func[rc](table, search)) 
+            break;
+    }
+    
+    exportTableHHD(table);
+    clearTableHash(search);
+    
+    printf("\n*** Программа завершена ***\n");
     
     return 0;
 }
+
+
+/*
+unsigned int size = 10;
+unsigned long long allOffset = sizeof(unsigned long long) + sizeof(TitleHashHD)*size + sizeof(unsigned int);
+
+FILE *file = getFile("Введите название файла > ", "w+r", NULL);
+fwrite(&allOffset, sizeof(unsigned long long), 1, file);
+fwrite(&size, sizeof(unsigned int), 1, file);
+
+TitleHashHD *titleHash = NULL;
+titleHash = calloc(size, sizeof(TitleHashHD));
+for (int i = 0; i < size; i++) {
+    titleHash[i].KeySpaceOffset = 0;
+}
+
+fwrite(titleHash, sizeof(TitleHashHD), size, file);
+fclose(file);
+*/

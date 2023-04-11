@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6510273729E4C460005FF933 /* dialog.c in Sources */ = {isa = PBXBuildFile; fileRef = 6510273629E4C460005FF933 /* dialog.c */; };
 		651F17C829E35D7E00053CE2 /* getFunctions.c in Sources */ = {isa = PBXBuildFile; fileRef = 651F17C629E35D7E00053CE2 /* getFunctions.c */; };
 		6525351329E22356002E8B4E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 6525351229E22356002E8B4E /* main.c */; };
 		6525351B29E22466002E8B4E /* TableHashHD.c in Sources */ = {isa = PBXBuildFile; fileRef = 6525351A29E22466002E8B4E /* TableHashHD.c */; };
@@ -25,6 +26,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6510273529E4C460005FF933 /* dialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dialog.h; sourceTree = "<group>"; };
+		6510273629E4C460005FF933 /* dialog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dialog.c; sourceTree = "<group>"; };
+		6510273A29E4C9D0005FF933 /* sas.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = sas.bin; sourceTree = "<group>"; };
+		6510273B29E4C9D1005FF933 /* sas.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = sas.txt; sourceTree = "<group>"; };
 		651F17C629E35D7E00053CE2 /* getFunctions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = getFunctions.c; sourceTree = "<group>"; };
 		651F17C729E35D7E00053CE2 /* getFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = getFunctions.h; sourceTree = "<group>"; };
 		6525350F29E22356002E8B4E /* lab3d */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = lab3d; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +73,10 @@
 				6525351929E22466002E8B4E /* TableHashHD.h */,
 				651F17C629E35D7E00053CE2 /* getFunctions.c */,
 				651F17C729E35D7E00053CE2 /* getFunctions.h */,
+				6510273629E4C460005FF933 /* dialog.c */,
+				6510273529E4C460005FF933 /* dialog.h */,
+				6510273A29E4C9D0005FF933 /* sas.bin */,
+				6510273B29E4C9D1005FF933 /* sas.txt */,
 			);
 			path = lab3d;
 			sourceTree = "<group>";
@@ -130,6 +139,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6525351B29E22466002E8B4E /* TableHashHD.c in Sources */,
+				6510273729E4C460005FF933 /* dialog.c in Sources */,
 				6525351329E22356002E8B4E /* main.c in Sources */,
 				651F17C829E35D7E00053CE2 /* getFunctions.c in Sources */,
 			);

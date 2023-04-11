@@ -53,9 +53,10 @@ typedef struct TableHash {
 
 
 TableHHD *importTableHHD(FILE *file);
+int exportTableHHD(TableHHD *table);
 int addInfoHHD(TableHHD *table, char *info, char *key);
 void printTableHHD(TableHHD *table);
-int deleteKey(TableHHD *table, char *key);
+int deleteKeyHHD(TableHHD *table, char *key);
 int deleteOldVersionsHHD(TableHHD *table, char *key);
 
 // =======(Для поиска)=======

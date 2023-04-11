@@ -21,11 +21,20 @@ TableHHD *importTableHHD(FILE *file) {
     return table;
 }
 
+int exportTableHHD(TableHHD *table) {
+    fseek(table->file, 0, SEEK_SET);
+    fwrite(&table->allOffset, sizeof(unsigned long long), 1, table->file);
+    fclose(table->file);
+    free(table);
+    return 0;
+}
+
 int getIndex(char *string, int maxSize) {
     
     if(string == NULL) {
         return -1;
     }
+    
     long hash = 0;
     int index;
     double intpart = 1;
@@ -39,6 +48,16 @@ int getIndex(char *string, int maxSize) {
 
 int addInfoHHD(TableHHD *table, char *info, char *key) {
     
+    if(!info || !key ) {
+        if(key) {
+            free(key);
+        }
+        if(info) {
+            free(info);
+        }
+        return 1;
+    }
+    
     int index = getIndex(key, table->sizeTitle);
     TitleHashHD titleHash;
     KeySpaceHHD keySpace;
@@ -49,7 +68,6 @@ int addInfoHHD(TableHHD *table, char *info, char *key) {
     fseek(table->file, sizeof(unsigned int) + sizeof(unsigned long long) + index*sizeof(TitleHashHD), SEEK_SET);
     fread(&titleHash, sizeof(TitleHashHD), 1, table->file);
     offset = titleHash.KeySpaceOffset;
-    
     while (offset) {
         fseek(table->file, offset, SEEK_SET);
         fread(&keySpace, sizeof(KeySpaceHHD), 1, table->file);
@@ -62,14 +80,13 @@ int addInfoHHD(TableHHD *table, char *info, char *key) {
         }
         free(keyTable);
         offset = keySpace.nextOffset;
-        
     }
     
     if(offset == 0) {
         fseek(table->file, table->allOffset, SEEK_SET);
         fwrite(key, sizeof(char), strlen(key) + 1, table->file);
+        memset(&keySpace, 0, sizeof(KeySpaceHHD));
         keySpace.keyLenght = (int) strlen(key) + 1;
-        free(key);
         keySpace.keyOffset = table->allOffset;
         table->allOffset = table->allOffset + keySpace.keyLenght;
         keySpace.ItemOffset = 0;
@@ -77,6 +94,7 @@ int addInfoHHD(TableHHD *table, char *info, char *key) {
         fseek(table->file, table->allOffset, SEEK_SET);
         fwrite(&keySpace, sizeof(KeySpaceHHD), 1, table->file);
         offset = table->allOffset;
+        titleHash.KeySpaceOffset = offset;
         table->allOffset = table->allOffset + sizeof(KeySpaceHHD);
     }
     
@@ -96,7 +114,7 @@ int addInfoHHD(TableHHD *table, char *info, char *key) {
     item.lenghtInfo = (int) strlen(info) + 1;
     item.infoOffset = table->allOffset;
     fseek(table->file, table->allOffset, SEEK_SET);
-    fwrite(info, sizeof(char), item.lenghtInfo, table->file);
+    fwrite(info, sizeof(char), strlen(info) + 1, table->file);
     table->allOffset = table->allOffset + item.lenghtInfo;
     
     itemOffset = table->allOffset;
@@ -110,9 +128,13 @@ int addInfoHHD(TableHHD *table, char *info, char *key) {
     
     if(titleHash.KeySpaceOffset == keySpace.nextOffset) {
         titleHash.KeySpaceOffset = offset;
-        fseek(table->file, sizeof(unsigned int) + sizeof(unsigned long long) + index*sizeof(TitleHashHD), SEEK_SET);
-        fwrite(&titleHash, sizeof(TitleHashHD), 1, table->file);
     }
+    
+    fseek(table->file, sizeof(unsigned int) + sizeof(unsigned long long) + index*sizeof(TitleHashHD), SEEK_SET);
+    fwrite(&titleHash, sizeof(TitleHashHD), 1, table->file);
+    
+    free(key);
+    free(info);
     
     return 0;
 }
@@ -133,6 +155,7 @@ void printTableHHD(TableHHD *table) {
         fread(&titleHash, sizeof(TitleHashHD), 1, table->file);
         keySpaceOffset = titleHash.KeySpaceOffset;
         while (keySpaceOffset) {
+            printf("\n");
             fseek(table->file, keySpaceOffset, SEEK_SET);
             fread(&keySpace, sizeof(KeySpaceHHD), 1, table->file);
             key = calloc(keySpace.keyLenght, sizeof(char));
@@ -157,7 +180,12 @@ void printTableHHD(TableHHD *table) {
     }
 }
 
-int deleteKey(TableHHD *table, char *key) {
+int deleteKeyHHD(TableHHD *table, char *key) {
+    
+    if(!key) {
+        return 1;
+    }
+    
     int index = getIndex(key, table->sizeTitle);
     TitleHashHD titleHash;
     KeySpaceHHD keySpace;
@@ -201,10 +229,16 @@ int deleteKey(TableHHD *table, char *key) {
         fwrite(&keySpace, sizeof(KeySpaceHHD), 1, table->file);
     }
     
+    free(key);
+    
     return 0;
 }
 
 int deleteOldVersionsHHD(TableHHD *table, char *key) {
+    
+    if(!key) {
+        return 1;
+    }
     
     int index = getIndex(key, table->sizeTitle);
     TitleHashHD titleHash;
@@ -239,6 +273,8 @@ int deleteOldVersionsHHD(TableHHD *table, char *key) {
         fseek(table->file, keySpace.ItemOffset, SEEK_SET);
         fwrite(&item, sizeof(ItemHHD), 1, table->file);
     }
+    
+    free(key);
     
     return 0;
 }
@@ -460,4 +496,32 @@ TableHash *searchKeyVersionTH(TableHHD *table, TableHash *search, char *key, int
     }
     
     return search;
+}
+
+void clearTableHash(TableHash *table) {
+    KeyspaceHash *ks = NULL;
+    KeyspaceHash *prev = NULL;
+    Item *item = NULL;
+    Item *del = NULL;
+    
+    if(table) {
+        for (int i = 0; i < table->maxSize; i++) {
+            ks = table->th[i].ks;
+            while (ks) {
+                prev = ks;
+                item = ks->item;
+                while (item) {
+                    del = item;
+                    free(item->info);
+                    item = item->next;
+                    free(del);
+                }
+                free(ks->key);
+                ks = ks->next;
+                free(prev);
+            }
+        }
+        free(table->th);
+        free(table);
+    }
 }
